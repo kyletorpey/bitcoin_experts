@@ -1,18 +1,26 @@
+#!/usr/bin/env python
+
 import praw
 import time
 import tweepy
+import os
+import sys
+from os.path import getmtime
 
-CONSUMER_KEY = '*************'
-CONSUMER_SECRET = '*************'
-ACCESS_TOKEN = '*************'
-ACCESS_TOKEN_SECRET = '*************'
+WATCHED_FILES = [__file__]
+WATCHED_FILES_MTIMES = [(f, getmtime(f)) for f in WATCHED_FILES]
+
+CONSUMER_KEY = '**************'
+CONSUMER_SECRET = '**************'
+ACCESS_TOKEN = '**************'
+ACCESS_TOKEN_SECRET = '**************'
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
 r = praw.Reddit(user_agent = "Twitter:@bitcoin_experts:v0.2 by /u/kyletorpey")
-r.login("*************","*************")
+r.login("**************","**************")
 
 comments_cache = []
 posts_cache = []
@@ -42,9 +50,14 @@ def posts_bot():
 				posts_cache.append(post.id)
 
 while True:
-	posts_bot()
-	comments_bot()
-	time.sleep(120)
+	for f, mtime in WATCHED_FILES_MTIMES:
+		if getmtime(f) != mtime:
+			print('--> restarting')
+			os.execv(__file__, sys.argv)
+		else:
+			posts_bot()
+			comments_bot()
+			time.sleep(60)
 
 ###TO DO LIST###
 #add posts to the mailing list by bitcoin experts?
