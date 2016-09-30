@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import praw
+import requests
 import time
 import tweepy
 import os
@@ -49,16 +50,26 @@ def posts_bot():
 				api.update_status(tweet)
 				posts_cache.append(post.id)
 
+def restart():
+    print('--> restarting')
+    os.execv("./bitcoin_experts2.py", sys.argv)
+
 while True:
 	for f, mtime in WATCHED_FILES_MTIMES:
 		if getmtime(f) != mtime:
-			print('--> restarting')
-			os.execv(__file__, sys.argv)
+			restart()
 		else:
-			posts_bot()
-			comments_bot()
-			time.sleep(60)
+			try:
+			    posts_bot()
+			    comments_bot()
+			    time.sleep(60)
+			except requests.ConnectionError as e:
+			    restart()
 
 ###TO DO LIST###
 #add posts to the mailing list by bitcoin experts?
 #replace reddit names with twitter names in tweets
+#fix tweets being too long sometimes
+#post github link on the twitter
+#remove quoted text from tweets
+#add context to reddit links
